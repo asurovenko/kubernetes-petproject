@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: dsp-service
+  namespace: default
+spec:
+  selector:
+    app: dsp
+  ports:
+    - port: 80
+      targetPort: 8124
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dsp
+  namespace: default
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: dsp
+  template:
+    metadata:
+      labels:
+        app: dsp
+    spec:
+      restartPolicy: Always
+      priorityClassName: least
+      containers:
+      - name: dsp
+        image: dsp:v1
+        ports:
+          - containerPort: 8124
+            protocol: TCP
+        env:
+          - name: "POD_IP"
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+

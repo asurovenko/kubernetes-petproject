@@ -1,0 +1,24 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+#    nginx.ingress.kubernetes.io/rewrite-target: "/"
+spec:
+  rules:
+  - http:
+      paths:
+      - path: "/postjson"
+        backend:
+          serviceName: ssp-service
+          servicePort: 80
+      - path: "/bid"
+        backend:
+          serviceName: dsp-service
+          servicePort: 80
+      - path: "/imp"
+        backend:
+          serviceName: tracker-service
+          servicePort: 80

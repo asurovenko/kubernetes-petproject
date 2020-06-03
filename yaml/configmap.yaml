@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: config-map
+  namespace: default
+data:
+  SSP_DB_URL: "postgres"
+  SSP_DB_DATABASE: "pm-ssp"
+  SSP_DB_USER: "ssp"
+  SSP_DB_PASS: "A6e97lc6TlxKKpUmRrD"
+  CLICKHOUSE_TABLE: "events_dev.events"
+  CLICKHOUSE_NODE: "http://clickhouse:8123/?user=default&password=1234567890"

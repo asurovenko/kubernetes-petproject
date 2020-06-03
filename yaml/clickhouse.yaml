@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: clickhouse
+spec:
+  ports:
+    - port: 8123
+      targetPort: 8123
+      protocol: TCP
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+  name: clickhouse
+subsets:
+  - addresses:
+      - ip: 35.171.193.85
+    ports:
+      - port: 8123

@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ssp-service
+  namespace: default
+spec:
+  selector:
+    app: ssp
+  ports:
+    - port: 80
+      targetPort: 8123
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ssp
+  namespace: default
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: ssp
+  template:
+    metadata:
+      labels:
+        app: ssp
+    spec:
+      restartPolicy: Always
+      priorityClassName: high
+#      volumes:
+#      - name: storage
+#        persistentVolumeClaim:
+#          claimName: pvc-name
+      containers:
+      - name: ssp
+        image: ssp:v1
+#        volumeMounts:
+#        - mountPath: "/log"
+#          name: storage
+        ports:
+          - containerPort: 8123
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8123
+          initialDelaySeconds: 120
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8123
+          initialDelaySeconds: 180
+          periodSeconds: 3
+        env:
+          - name: "POD_IP"
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: "HOST_IP"
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: "SSP_DB_URL"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_URL
+          - name: "SSP_DB_USER"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_USER
+          - name: "SSP_DB_DATABASE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_DATABASE
+          - name: "SSP_DB_PASS"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_PASS
+
+          - name: "CLICKHOUSE_TABLE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: CLICKHOUSE_TABLE
+          - name: "CLICKHOUSE_NODE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: CLICKHOUSE_NODE
+
+
+
+
+#              secretKeyRef:
+#                name: ssp-db-pass
+#                key: password

@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: tracker-service
+  namespace: default
+spec:
+  selector:
+    app: tracker
+  ports:
+    - port: 80
+      targetPort: 8126
+      protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tracker
+  namespace: default
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: tracker
+  template:
+    metadata:
+      labels:
+        app: tracker
+    spec:
+      restartPolicy: Always
+      priorityClassName: high
+      containers:
+      - name: tracker
+        image: tracker:v1
+        ports:
+          - containerPort: 8126
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /status
+            port: 8126
+          initialDelaySeconds: 120
+          periodSeconds: 3
+        livenessProbe:
+          httpGet:
+            path: /status
+            port: 8126
+          initialDelaySeconds: 180
+          periodSeconds: 3
+        env:
+          - name: "POD_IP"
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: "HOST_IP"
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          - name: "SSP_DB_URL"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_URL
+          - name: "SSP_DB_USER"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_USER
+          - name: "SSP_DB_DATABASE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_DATABASE
+          - name: "SSP_DB_PASS"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: SSP_DB_PASS
+
+          - name: "CLICKHOUSE_TABLE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: CLICKHOUSE_TABLE
+          - name: "CLICKHOUSE_NODE"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: CLICKHOUSE_NODE
+          - name: "TRACKER_URL"
+            valueFrom:
+              configMapKeyRef:
+                name: config-map
+                key: TRACKER_URL
+
+
+
+
+#              secretKeyRef:
+#                name: ssp-db-pass
+#                key: password
